@@ -29,8 +29,12 @@ public class Punteggio {
      * Promette: una partita 0 a 0, non finita, senza vincitore e con la storia vuota.
      */
     public Punteggio(int puntiPerVincere, int scartoMinimo) {
-        this.puntiPerVincere = puntiPerVincere;
-        this.scartoMinimo = scartoMinimo;
+        if (puntiPerVincere < 1 || scartoMinimo < 1) {
+            throw new IllegalArgumentException("puntiPerVincere o scartoMinimo è minore di 1");
+        } else {
+            this.puntiPerVincere = puntiPerVincere;
+            this.scartoMinimo = scartoMinimo;
+        }
     }
 
     /**
@@ -125,5 +129,44 @@ public class Punteggio {
      */
     public void azzera() {
         storia.clear();
+    }
+
+    /*
+    Invariante
+    - Nessun elemento null nella storia
+    - I punti di ciascun lato sono quanti compaiono nella storia (se ci sono campi con i punti)
+    - C'è un vincitore se e solo se, contando la storia, un lato ha vinto
+    - Nella storia non ci sono punti dopo quello che ha chiuso la partita. 
+    Se il codice tiene solo la storia, restano le proprietà sulla storia.
+    */
+    boolean repOK() { //rispettaInvariante
+        int pSinistra = 0;
+        int pDestra = 0;
+
+        for (int i = 0; i < storia.size(); i++) {
+            Lato l = storia.get(i);
+            
+            // controlla null nella storia
+            if (l == null) {
+                return false;
+            }
+
+            // calcolo punti
+            if (l == Lato.SINISTRA) {
+                pSinistra++;
+            } else {
+                pDestra++;
+            }
+
+            int max = Math.max(pSinistra, pDestra);
+            int scarto = Math.abs(pSinistra - pDestra);
+            boolean partitaFinitaQui = max >= puntiPerVincere && scarto >= scartoMinimo;
+
+            if (partitaFinitaQui && i < storia.size() - 1) {
+                return false;
+            }
+        }
+        
+        return true;
     }
 }
